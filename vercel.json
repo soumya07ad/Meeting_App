@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "builds": [
+  "scripts": {
+    "build":[
     {
       "src": "next.config.mjs",
       "use": "@vercel/next"
     }
   ]
+  }
+  
 }
