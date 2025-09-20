@@ -3,9 +3,10 @@
 import { useCall, useCallStateHooks } from '@stream-io/video-react-sdk';
 
 import { Button } from './ui/button';
+import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-const EndCallButton = () => {
+const EndCallButton = ({ showText = false, forceShow = false }: { showText?: boolean; forceShow?: boolean }) => {
   const call = useCall();
   const router = useRouter();
 
@@ -23,7 +24,7 @@ const EndCallButton = () => {
     call.state.createdBy &&
     localParticipant.userId === call.state.createdBy.id;
 
-  if (!isMeetingOwner) return null;
+  if (!isMeetingOwner && !forceShow) return null;
 
   const endCall = async () => {
     await call.endCall();
@@ -31,8 +32,9 @@ const EndCallButton = () => {
   };
 
   return (
-    <Button onClick={endCall} className="bg-red-500">
-      End call for everyone
+    <Button onClick={endCall} className="bg-red-500 rounded-full p-2" aria-label="End call for everyone">
+      <X size={16} />
+      {showText ? <span className="ml-2">End call for everyone</span> : null}
     </Button>
   );
 };

@@ -11,6 +11,8 @@ const CallControlsSimple = () => {
   const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
+  const [screenShareSupported, setScreenShareSupported] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!call) return;
@@ -19,6 +21,13 @@ const CallControlsSimple = () => {
     if (typeof call.microphone?.isEnabled === 'boolean') setMicEnabled(call.microphone.isEnabled);
     // @ts-ignore
     if (typeof call.camera?.isEnabled === 'boolean') setCamEnabled(call.camera.isEnabled);
+    // feature detect screen share support
+  // check navigator.getDisplayMedia or common method names on call.screenShare
+  const ns = typeof (navigator as any).mediaDevices?.getDisplayMedia === 'function';
+  // @ts-ignore - check for known method names without asserting types
+  const csStart = call?.screenShare && (typeof (call.screenShare as any).start === 'function' || typeof (call.screenShare as any).startScreenShare === 'function' || typeof (call.screenShare as any).publish === 'function');
+  setScreenShareSupported(Boolean(ns || csStart));
+    setIsMobile(/Mobi|Android/i.test(navigator.userAgent || ''));
   }, [call]);
 
   const toggleMic = async () => {
@@ -102,26 +111,33 @@ const CallControlsSimple = () => {
     <div className="flex items-center gap-2">
       <Button
         onClick={toggleMic}
-        className={`${micEnabled ? 'bg-emerald-600' : 'bg-slate-700'} flex items-center gap-2`}
+        size="sm"
+        aria-label={micEnabled ? 'Mute microphone' : 'Unmute microphone'}
+        className={`${micEnabled ? 'bg-emerald-600' : 'bg-slate-700'} rounded-full p-2`}
       >
-        {micEnabled ? <Mic size={16} /> : <MicOff size={16} />}
-        <span className="sr-only">{micEnabled ? 'Mute' : 'Unmute'}</span>
+        {micEnabled ? <Mic size={14} /> : <MicOff size={14} />}
       </Button>
       <Button
         onClick={toggleCam}
-        className={`${camEnabled ? 'bg-emerald-600' : 'bg-slate-700'} flex items-center gap-2`}
+        size="sm"
+        aria-label={camEnabled ? 'Turn camera off' : 'Turn camera on'}
+        className={`${camEnabled ? 'bg-emerald-600' : 'bg-slate-700'} rounded-full p-2`}
       >
-        {camEnabled ? <Video size={16} /> : <VideoOff size={16} />}
-        <span className="sr-only">{camEnabled ? 'Turn camera off' : 'Turn camera on'}</span>
+        {camEnabled ? <Video size={14} /> : <VideoOff size={14} />}
       </Button>
       <Button
         onClick={toggleScreenShare}
-        className={`${isSharing ? 'bg-emerald-600' : 'bg-slate-700'} flex items-center gap-2`}
+        size="sm"
+        aria-label={isSharing ? 'Stop screen share' : 'Share screen'}
+        disabled={!screenShareSupported}
+        title={!screenShareSupported ? 'Screen share not supported in this browser' : isMobile ? 'Screen share may be limited on some mobile browsers' : ''}
+        className={`${isSharing ? 'bg-emerald-600' : 'bg-slate-700'} rounded-full p-2 ${!screenShareSupported ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        {isSharing ? <Monitor size={16} /> : <Share2 size={16} />}
-        <span className="sr-only">{isSharing ? 'Stop screen share' : 'Share screen'}</span>
+        {isSharing ? <Monitor size={14} /> : <Share2 size={14} />}
       </Button>
-      <LeaveButton />
+      <div className="ml-1">
+        <LeaveButton />
+      </div>
     </div>
   );
 };
