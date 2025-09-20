@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { StreamCall, StreamTheme } from '@stream-io/video-react-sdk';
 import { useParams } from 'next/navigation';
 import { Loader } from 'lucide-react';
@@ -13,7 +12,7 @@ import MeetingRoom from '@/components/MeetingRoom';
 
 const MeetingPage = () => {
   const { id } = useParams();
-  const { isLoaded, user } = useUser();
+  const isLoaded = true;
   const { call, isCallLoading } = useGetCallById(id);
   const [isSetupComplete, setIsSetupComplete] = useState(false);
 
@@ -25,10 +24,7 @@ const MeetingPage = () => {
     </p>
   );
 
-  // get more info about custom call type:  https://getstream.io/video/docs/react/guides/configuring-call-types/
-  const notAllowed = call.type === 'invited' && (!user || !call.state.members.find((m) => m.user.id === user.id));
-
-  if (notAllowed) return <Alert title="You are not allowed to join this meeting" />;
+  // Since auth has been removed, skip membership checks and allow joining.
 
   return (
     <main className="h-screen w-full">

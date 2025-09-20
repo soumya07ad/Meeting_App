@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
 
@@ -29,18 +29,29 @@ const Table = ({
 
 const PersonalRoom = () => {
   const router = useRouter();
-  const { user } = useUser();
   const client = useStreamVideoClient();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('Anonymous');
+
+  useEffect(() => {
+    // create or reuse a local anonymous id so personal room persists per-browser
+    let id = localStorage.getItem('bonggo_anonymous_id');
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem('bonggo_anonymous_id', id);
+    }
+    setUserId(id);
+  }, []);
   const { toast } = useToast();
 
-  const meetingId = user?.id;
+  const meetingId = userId!;
 
   const { call } = useGetCallById(meetingId!);
 
   const startRoom = async () => {
-    if (!client || !user) return;
+  if (!client || !meetingId) return;
 
-    const newCall = client.call("default", meetingId!);
+  const newCall = client.call("default", meetingId!);
 
     if (!call) {
       await newCall.getOrCreate({
@@ -59,7 +70,7 @@ const PersonalRoom = () => {
     <section className="flex size-full flex-col gap-10 text-white">
       <h1 className="text-xl font-bold lg:text-3xl">Personal Meeting Room</h1>
       <div className="flex w-full flex-col gap-8 xl:max-w-[900px]">
-        <Table title="Topic" description={`${user?.username}'s Meeting Room`} />
+  <Table title="Topic" description={`${username}'s Meeting Room`} />
         <Table title="Meeting ID" description={meetingId!} />
         <Table title="Invite Link" description={meetingLink} />
       </div>
