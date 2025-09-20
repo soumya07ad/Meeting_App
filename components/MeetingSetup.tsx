@@ -61,6 +61,13 @@ const MeetingSetup = ({
 
   // https://getstream.io/video/docs/react/ui-cookbook/replacing-call-controls/
   const [isMicCamToggled, setIsMicCamToggled] = useState(false);
+  const [displayName, setDisplayName] = useState<string>(() => {
+    try {
+      return localStorage.getItem('bonggo_display_name') || '';
+    } catch (e) {
+      return '';
+    }
+  });
 
   useEffect(() => {
     if (isMicCamToggled) {
@@ -94,6 +101,15 @@ const MeetingSetup = ({
         <VideoPreview />
       </ErrorBoundary>
       <CameraDiagnostic />
+      <div className="mt-4 flex w-full max-w-md flex-col gap-2">
+        <label className="text-sm text-sky-2">Your name</label>
+        <input
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder="Enter your display name"
+          className="w-full rounded bg-dark-2 px-3 py-2 text-white"
+        />
+      </div>
       <div className="flex h-16 items-center justify-center gap-3">
         <label className="flex items-center justify-center gap-2 font-medium">
           <input
@@ -108,7 +124,26 @@ const MeetingSetup = ({
       <Button
         className="rounded-md bg-green-500 px-4 py-2.5"
         onClick={() => {
+          // persist name so other pages and the Stream client can pick it up
+          try {
+            if (displayName && displayName.trim())
+              localStorage.setItem('bonggo_display_name', displayName.trim());
+          } catch (e) {}
+
           call.join();
+
+          // Best-effort: try to update the local participant's metadata
+          try {
+            // Some SDK builds expose getLocalParticipant().update
+            // Use a tolerant approach since API surface may vary
+            // @ts-ignore
+            const local = call.getLocalParticipant ? call.getLocalParticipant() : null;
+            if (local && typeof local.update === 'function') {
+              local.update({ name: displayName || 'Anonymous' });
+            }
+          } catch (e) {
+            // ignore
+          }
 
           setIsSetupComplete(true);
         }}
