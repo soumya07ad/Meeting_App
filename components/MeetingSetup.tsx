@@ -9,6 +9,34 @@ import {
 
 import Alert from './Alert';
 import { Button } from './ui/button';
+import ErrorBoundary from './ErrorBoundary';
+
+const CameraDiagnostic = () => {
+  const [status, setStatus] = useState<string>('unknown');
+
+  const check = async () => {
+    try {
+      setStatus('requesting');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      setStatus('granted');
+      // stop tracks immediately
+      stream.getTracks().forEach((t) => t.stop());
+    } catch (e: any) {
+      setStatus('error: ' + (e?.message || String(e)));
+    }
+  };
+
+  return (
+    <div className="mt-2 w-full max-w-md text-sm text-sky-2">
+      <div className="mb-1">Camera diagnostic: {status}</div>
+      <div className="flex gap-2">
+        <button onClick={check} className="rounded bg-sky-600 px-3 py-1">
+          Check Camera
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const MeetingSetup = ({
   setIsSetupComplete,
@@ -62,7 +90,10 @@ const MeetingSetup = ({
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center gap-3 text-white">
       <h1 className="text-center text-2xl font-bold">Setup</h1>
-      <VideoPreview />
+      <ErrorBoundary>
+        <VideoPreview />
+      </ErrorBoundary>
+      <CameraDiagnostic />
       <div className="flex h-16 items-center justify-center gap-3">
         <label className="flex items-center justify-center gap-2 font-medium">
           <input

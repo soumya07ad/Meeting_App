@@ -42,5 +42,5 @@ export const useGetCalls = () => {
     return startsAt && new Date(startsAt) > now
   })
 
-  return { endedCalls, upcomingCalls, callRecordings: calls, isLoading }
+  return { endedCalls, upcomingCalls, isLoading }
 };
