@@ -1,4 +1,4 @@
-# Bonggo Meet (Yoom)
+#  Meeting_App (Yoom)
 
 A lightweight Next.js video meeting app using GetStream Video SDK. Originally built with Clerk auth, this repository has been modified to run with anonymous per-browser identities and a server-side token minting action for Stream.
 
